@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>课程工作台 · 课堂互动工具箱</title>
+<style>
+:root{
+  --side-bg:#15213a;--side-bg2:#1c2c4d;--side-active:#3a6fd8;
+  --main-bg:#f4f6fb;--card-bg:#ffffff;--title:#1f2d4d;--sub:#8a93a8;
+  --border:#e8ecf4;--purple:#6a3fb0;
+  /* 深色系：与左侧导航栏协调，主区稍浅 */
+  --d-bg:#1c2b47; --d-card:#24355a; --d-card2:#2a3d63; --d-border:#374b73;
+  --d-text:#f0f4ff; --d-sub:#a9bce0; --d-purple:#b79ae8; --d-blue:#7db3ff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--main-bg);color:var(--title);display:flex;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+/* ============ 左侧栏 ============ */
+.sidebar{width:222px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg2),var(--side-bg));color:#cdd6e8;display:flex;flex-direction:column;position:relative}
+.brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand-row{display:flex;align-items:center;gap:11px}
+.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6a9df5,#3a6fd8);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(58,111,216,.4)}
+.brand-logo svg{width:22px;height:22px}
+.brand-name{font-size:16.5px;font-weight:700;color:#fff;letter-spacing:.5px}
+.brand-sub{font-size:11px;color:#93a2c2;margin-top:11px;line-height:1.55}
+.nav{padding:14px 10px;flex:1;overflow:auto}
+.nav::-webkit-scrollbar{width:0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:9px;font-size:13.5px;cursor:pointer;margin-bottom:4px;transition:background .15s,color .15s;user-select:none}
+.nav-item svg{width:18px;height:18px;flex-shrink:0;opacity:.85}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:var(--side-active);color:#fff;box-shadow:0 5px 14px rgba(58,111,216,.35)}
+.nav-item.active svg{opacity:1}
+.badge{margin-left:auto;background:#e2563f;color:#fff;font-size:10px;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.side-foot{padding:16px 18px 20px;border-top:1px solid rgba(255,255,255,.07)}
+.poa-btn{width:100%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#d5dded;border-radius:8px;padding:9px;font-size:11.5px;text-align:center;cursor:pointer}
+.poa-btn:hover{background:rgba(255,255,255,.11)}
+.side-foot-sub{font-size:10.5px;color:#7f8dac;text-align:center;margin-top:11px}
+.avatar{position:absolute;right:16px;bottom:74px;width:34px;height:34px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.3);background:#3a6fd8;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.avatar svg{width:100%;height:100%;display:block}
+
+/* ============ 主区 ============ */
+.main{flex:1;height:100vh;position:relative;overflow:hidden}
+.view{display:none;height:100%;flex-direction:column}
+.view.active{display:flex}
+.scroll-area{flex:1;overflow-y:auto;padding:26px 30px 30px}
+.scroll-area::-webkit-scrollbar{width:8px}
+.scroll-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+
+/* 顶部栏（首页） */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.topbar h1{font-size:22px;font-weight:800;color:#1c2947;letter-spacing:.3px}
+.topbar p{font-size:12px;color:var(--sub);margin-top:6px}
+.top-actions{display:flex;gap:10px;padding-top:3px}
+.tbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:#fff;color:#4a5673;border-radius:8px;padding:8px 14px;font-size:12.5px;cursor:pointer;box-shadow:0 2px 6px rgba(30,45,77,.04)}
+.tbtn:hover{border-color:#b9c8e8;color:#2f5fc0;background:#fbfcff}
+.tbtn svg{width:15px;height:15px}
+
+/* 工具卡片网格 */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.tool-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px 10px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;box-shadow:0 3px 12px rgba(30,45,77,.05);transition:transform .16s,box-shadow .16s,border-color .16s;user-select:none}
+.tool-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(30,45,77,.12);border-color:#cdd9f2}
+.tool-card:active{transform:translateY(-1px)}
+.tool-card.featured{border-color:#d8c6f5;background:linear-gradient(180deg,#fcfaff,#fff)}
+.tool-card.featured:hover{border-color:#b79ae8;box-shadow:0 10px 26px rgba(106,63,176,.18)}
+.icon-wrap{width:56px;height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.icon-wrap img{width:52px;height:52px;display:block;object-fit:contain}
+.tool-name{font-size:14px;font-weight:700;color:#243254;margin-bottom:5px}
+.tool-desc{font-size:11px;color:var(--sub);line-height:1.4}
+.featured .tool-name{color:var(--purple)}
+.tip{margin-top:20px;background:#eef2fa;border:1px solid #e3e9f6;border-radius:10px;padding:13px 18px;font-size:12.5px;color:#6c7793;text-align:center}
+
+/* ============ 深色主题（进入闯关游戏后所有界面）============ */
+.dark{background:var(--d-bg);color:var(--d-text)}
+.dark .scroll-area{background:var(--d-bg)}
+.dark .back-btn{align-self:flex-start;margin:0 0 6px;border:none;background:none;color:var(--d-sub);font-size:18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:6px 0}
+.dark .back-btn:hover{color:#fff}
+.dark .back-btn svg{width:20px;height:20px}
+
+/* 通用标题区 */
+.game-head{display:flex;align-items:center;gap:18px;margin:6px 0 28px}
+.game-head .icon-wrap{width:70px;height:70px;margin:0;background:linear-gradient(135deg,#3a2b63,#2a1f4d);border-radius:16px;flex-shrink:0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.game-head .icon-wrap img{width:56px;height:56px}
+.game-head h1{font-size:30px;font-weight:800;color:var(--d-purple)}
+.game-head p{font-size:18px;color:var(--d-sub);margin-top:8px}
+
+/* ---------- 九宫格弹窗（严格按参考图：白底弹窗、原图标大小） ---------- */
+.mission-overlay{position:absolute;inset:0;z-index:50;background:rgba(16,24,40,.55);display:none;align-items:flex-start;justify-content:center;padding:26px 20px}
+.mission-overlay.show{display:flex}
+.mission-panel{background:#fff;color:#23304a;border-radius:10px;width:min(880px,96%);max-height:calc(100% - 10px);overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.45);position:relative}
+.mission-panel::-webkit-scrollbar{width:8px}
+.mission-panel::-webkit-scrollbar-thumb{background:#d7dde9;border-radius:4px}
+.mp-head{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #eef1f6}
+.mp-head .mp-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#37425e}
+.mp-head .mp-title .qr-ico{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,#5b8def,#3a6fd8)}
+.mp-close{border:none;background:none;font-size:22px;line-height:1;color:#9aa4ba;cursor:pointer}
+.mp-close:hover{color:#e2574c}
+.mp-body{padding:24px 26px 30px}
+.mp-title-main{text-align:center;font-size:21px;font-weight:800;color:#1f2d4d;margin-bottom:6px}
+.mp-sub{text-align:center;font-size:13px;color:#9aa3b6;margin-bottom:24px}
+.mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mission-card{background:#fff;border:1px solid #edf0f6;border-radius:12px;padding:5px 5px 20px;position:relative;overflow:hidden;text-align:center;cursor:pointer;transition:transform .16s,box-shadow .16s;box-shadow:0 2px 10px rgba(30,45,77,.06);display:flex;flex-direction:column;align-items:center}
+.mission-card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--mc,#4a90d9)}
+.mission-card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(30,45,77,.14)}
+.mission-card.active{border-color:var(--mc);box-shadow:0 0 0 2px var(--mc),0 10px 24px rgba(30,45,77,.14)}
+.mission-icon{width:58px;height:58px;border-radius:14px;background:#f5f7fb;display:flex;align-items:center;justify-content:center;font-size:30px;margin:16px 0 12px}
+.mission-badge{font-size:13px;font-weight:700;color:#fff;background:var(--mc,#4a90d9);border-radius:16px;padding:4px 16px;margin-bottom:10px}
+.mission-name{font-size:17px;font-weight:800;color:#243254;margin-bottom:6px}
+.mission-out{font-size:13px;color:#98a2b7}
+
+/* ---------- 两个任务列表页 ---------- */
+.hero{display:flex;align-items:center;justify-content:space-between;gap:24px;background:linear-gradient(120deg,var(--d-card2),var(--d-card));border:1px solid var(--d-border);border-radius:18px;padding:20px 28px;margin:6px 0 26px;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.hero-text{flex:1;min-width:0}
+.hero-tag{display:inline-block;font-size:18px;font-weight:700;color:#ffd9a8;background:rgba(230,126,34,.18);border:1px solid rgba(230,126,34,.45);border-radius:20px;padding:5px 16px;margin-bottom:14px}
+.hero h1{font-size:34px;font-weight:800;color:var(--d-text);line-height:1.3}
+.hero p{font-size:20px;color:var(--d-sub);margin-top:10px}
+.hero-img{width:170px;height:170px;flex-shrink:0;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.4))}
+.task-list{display:grid;grid-template-columns:1fr;gap:18px}
+.task-card{background:linear-gradient(160deg,var(--d-card2),var(--d-card));border:1px solid var(--d-border);border-radius:16px;padding:24px 28px;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;transition:transform .16s,box-shadow .16s,border-color .16s;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.task-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,#a06ef0,#6a3fbe)}
+.task-card.t2::before{background:linear-gradient(180deg,#6aa6ff,#3a6fd8)}
+.task-card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.45);border-color:#7d5ac0}
+.task-card.t2:hover{border-color:#4a7fd6}
+.task-tag{font-size:24px;font-weight:800;color:var(--d-purple);letter-spacing:.5px}
+.task-card.t2 .task-tag{color:var(--d-blue)}
+.task-en{font-size:22px;font-weight:700;color:var(--d-text);line-height:1.4}
+.task-zh{font-size:20px;color:var(--d-sub);line-height:1.5}
+.task-go{align-self:flex-start;display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#7d4fc4,#5a2f96);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(106,63,176,.3);margin-top:4px}
+.task-card.t2 .task-go{background:linear-gradient(135deg,#5b8def,#3a6fd8);box-shadow:0 4px 12px rgba(58,111,216,.3)}
+.task-go:hover{filter:brightness(1.12)}
+.task-go svg{width:18px;height:18px}
+
+/* ---------- 程序视图 ---------- */
+.app-view{background:var(--d-bg)}
+.app-bar{flex-shrink:0;display:flex;align-items:center;gap:18px;background:var(--d-card);border-bottom:1px solid var(--d-border);padding:10px 18px}
+.app-bar .back-btn{margin:0}
+.app-title{font-size:18px;font-weight:700;color:var(--d-text)}
+.app-frame{flex:1;width:100%;border:0;background:var(--d-bg)}
+
+/* ============ Toast ============ */
+#toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%) translateY(20px);background:#22304e;color:#fff;padding:12px 22px;border-radius:10px;font-size:16px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1100px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .mission-grid{grid-template-columns:repeat(2,1fr)}
+  .hero-img{width:130px;height:130px}
+}
+@media(max-width:720px){
+  .mission-grid{grid-template-columns:1fr}
+  .hero{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 侧边栏 ============ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-row">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3L1 8l4 1.8V15c0 3.3 3.1 6 7 6s7-2.7 7-6V9.8L23 8 12 3zm0 2.2L19.3 8 12 10.9 4.7 8 12 5.2zM18 15c0 2.2-2.6 4-6 4s-6-1.8-6-4v-4.1l6 2.6 6-2.6V15z"/></svg>
+      </div>
+      <div class="brand-name">课程工作台</div>
+    </div>
+    <div class="brand-sub">高职英语（三）涉外体检职场英语</div>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="side-foot">
+    <div class="poa-btn">POA产出导向教学法</div>
+    <div class="side-foot-sub">公共基础课程包 · 18课时</div>
+  </div>
+  <div class="avatar">
+    <svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" fill="#ffe0bd"/><path d="M8 38c0-7 5.4-12 12-12s12 5 12 12z" fill="#e8b48a"/><path d="M12 13c0-5 3.6-8 8-8s8 3 8 8c0-1-3-2-8-2s-8 1-8 2z" fill="#5a3a2e"/></svg>
+  </div>
+</aside>
+
+<!-- ============ 主区 ============ -->
+<main class="main">
+
+  <!-- 首页 -->
+  <section class="view active" id="view-home">
+    <div class="scroll-area">
+      <header class="topbar">
+        <div>
+          <h1>课堂互动工具箱</h1>
+          <p>抽签 / 二维码 / 录音 / 眼动</p>
+        </div>
+        <div class="top-actions">
+          <button class="tbtn" data-toast="数据日历">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>数据日历</button>
+          <button class="tbtn" data-toast="批量导出">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>批量导出</button>
+        </div>
+      </header>
+      <div class="grid" id="toolGrid"></div>
+      <div class="tip">💡 点击上方任一工具按钮 → 选择对应的任务 → 加载该任务下的课堂活动</div>
+    </div>
+  </section>
+
+  <!-- 九宫格弹窗（严格按参考图：浮在首页之上） -->
+  <div class="mission-overlay" id="missionOverlay">
+    <div class="mission-panel">
+      <div class="mp-head">
+        <div class="mp-title"><span class="qr-ico"></span>任务二维码</div>
+        <button class="mp-close" id="mpClose" title="关闭">×</button>
+      </div>
+      <div class="mp-body">
+        <div class="mp-title-main">闯关游戏</div>
+        <div class="mp-sub">请选择任务，加载对应的课堂活动内容</div>
+        <div class="mission-grid" id="missionGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 两个任务列表页（Task 5 报告解读） -->
+  <section class="view dark" id="view-tasks">
+    <div class="scroll-area">
+      <button class="back-btn" id="backMissions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回任务列表</button>
+      <div class="hero">
+        <div class="hero-text">
+          <span class="hero-tag">Task 5 · 报告解读</span>
+          <h1>闯关游戏</h1>
+        </div>
+        <img class="hero-img" src="icons/report-doctor.png" alt="体检报告解读">
+      </div>
+      <div class="task-list">
+        <div class="task-card t1" data-task="1">
+          <div class="task-tag">TASK 1</div>
+          <div class="task-en">Sequence Sorting Game--Four-step Discourse Scaffold</div>
+          <div class="task-zh">排序游戏--报告解读交际支架</div>
+          <button class="task-go">进入任务
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="task-card t2" data-task="2">
+          <div class="task-tag">TASK 2</div>
+          <div class="task-en">AI-assisted Oral Practice</div>
+          <div class="task-zh">AI 口语交际实训</div>
+          <button class="task-go">进入任务
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 程序页 -->
+  <section class="view dark app-view" id="view-app">
+    <div class="app-bar">
+      <button class="back-btn" id="backTasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>返回任务列表</button>
+      <span class="app-title" id="appTitle"></span>
+    </div>
+    <iframe class="app-frame" id="appFrame" src="" allow="fullscreen; microphon*; camera*"></iframe>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ---------- 图标 ---------- */
+const ICONS = {
+  gamepad: 'icons/gamepad.png',
+  sentence: 'icons/sentence.png',
+  ai: 'icons/ai.png',
+  lottery: 'icons/lottery.png',
+  qr: 'icons/qr.png',
+  report: 'icons/report.png',
+  camera: 'icons/camera.png',
+  timer: 'icons/timer.png'
+};
+const iconHTML = key => `<img src="${ICONS[key]}" alt="">`;
+
+/* ---------- 侧边栏菜单 ---------- */
+const NAV = [
+  {name:'课程总览', icon:'<path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1z"/>'},
+  {name:'任务发布中心', icon:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>'},
+  {name:'作业批改&AI评价', icon:'<path d="M9 11l2 2 4-4"/><path d="M20 12l-8 8-4-4"/><rect x="3" y="3" width="18" height="18" rx="3"/>', badge:'18'},
+  {name:'学情数据中心', icon:'<path d="M4 20V10M10 20V4M16 20v-7M22 20V8"/>'},
+  {name:'课程资源素材库', icon:'<path d="M4 5a2 2 0 012-2h5l2 3h5a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2z"/>'},
+  {name:'成绩综合管理', icon:'<path d="M4 19h16M6 15l4-4 3 3 5-6"/>'},
+  {name:'课堂互动工具箱', icon:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>', active:true}
+];
+document.getElementById('nav').innerHTML = NAV.map(n=>`
+  <div class="nav-item ${n.active?'active':''}" data-name="${n.name}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${n.icon}</svg>
+    <span>${n.name}</span>${n.badge?`<span class="badge">${n.badge}</span>`:''}
+  </div>`).join('');
+
+/* ---------- 八个工具卡片 ---------- */
+const TOOLS = [
+  {name:'闯关游戏', desc:'九大任务闯关挑战', icon:'gamepad', featured:true, action:'game'},
+  {name:'句式游戏', desc:'九大任务岗位场景句型', icon:'sentence'},
+  {name:'AI情景口语', desc:'九大任务高级职场客户对话', icon:'ai'},
+  {name:'线上抽签', desc:'随机抽取学生/分组', icon:'lottery'},
+  {name:'任务二维码', desc:'生成任务分享二维码', icon:'qr'},
+  {name:'质检报告生成', desc:'九大任务AI质检报告', icon:'report'},
+  {name:'角色扮演录音', desc:'九大任务情景模拟', icon:'camera'},
+  {name:'课堂计时器', desc:'活动计时小工具', icon:'timer'}
+];
+document.getElementById('toolGrid').innerHTML = TOOLS.map(t=>`
+  <div class="tool-card ${t.featured?'featured':''}" data-action="${t.action||'placeholder'}" data-name="${t.name}">
+    <div class="icon-wrap">${iconHTML(t.icon)}</div>
+    <div class="tool-name">${t.name}</div>
+    <div class="tool-desc">${t.desc}</div>
+  </div>`).join('');
+
+/* ---------- 九大任务（九宫格）---------- */
+const MISSIONS = [
+  {n:1, name:'客户接待', out:'口头产出', emoji:'📋', color:'#4a90d9'},
+  {n:2, name:'检前告知', out:'口头产出', emoji:'📢', color:'#e2574c'},
+  {n:3, name:'信息问询', out:'表单书面产出', emoji:'📝', color:'#27ae60'},
+  {n:4, name:'流程引导', out:'口头产出', emoji:'🚶', color:'#6c5ce7'},
+  {n:5, name:'报告解读', out:'长篇口语产出', emoji:'📊', color:'#e67e22', active:true},
+  {n:6, name:'目标协商', out:'协商复合产出', emoji:'🎯', color:'#3498db'},
+  {n:7, name:'膳食指导', out:'翻译+口语复合产出', emoji:'🥗', color:'#9b59b6'},
+  {n:8, name:'运动建议', out:'科普书面产出', emoji:'🏃', color:'#1abc9c'},
+  {n:9, name:'健康随访', out:'正式应用文产出', emoji:'📜', color:'#d4a017'}
+];
+document.getElementById('missionGrid').innerHTML = MISSIONS.map(m=>`
+  <div class="mission-card ${m.active?'active':''}" data-n="${m.n}" data-active="${!!m.active}" style="--mc:${m.color}">
+    <div class="mission-icon">${m.emoji}</div>
+    <div class="mission-badge">Task ${m.n}</div>
+    <div class="mission-name">${m.name}</div>
+    <div class="mission-out">${m.out}</div>
+  </div>`).join('');
+
+/* ---------- 视图切换 ---------- */
+const views = {home:document.getElementById('view-home'),tasks:document.getElementById('view-tasks'),app:document.getElementById('view-app')};
+function show(v){Object.values(views).forEach(el=>el.classList.remove('active'));views[v].classList.add('active');views[v].querySelector('.scroll-area')?.scrollTo(0,0);}
+const overlay=document.getElementById('missionOverlay');
+function openMissions(){overlay.classList.add('show')}
+function closeMissions(){overlay.classList.remove('show')}
+
+let toastTimer;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2000);}
+
+/* 首页工具点击 */
+document.getElementById('toolGrid').addEventListener('click',e=>{
+  const card=e.target.closest('.tool-card');if(!card)return;
+  if(card.dataset.action==='game') openMissions();
+  else toast(`「${card.dataset.name}」工具建设中，敬请期待～`);
+});
+
+/* 顶部按钮 & 侧栏占位 */
+document.querySelectorAll('.tbtn').forEach(b=>b.addEventListener('click',()=>toast(`${b.dataset.toast}：功能建设中`)));
+document.getElementById('nav').addEventListener('click',e=>{
+  const it=e.target.closest('.nav-item');if(!it||it.classList.contains('active'))return;
+  toast(`「${it.dataset.name}」模块建设中`);
+});
+
+/* 九宫格点击 Task5 进入任务列表（弹窗保持打开，任务页在其上切换） */
+document.getElementById('missionGrid').addEventListener('click',e=>{
+  const c=e.target.closest('.mission-card');if(!c)return;
+  if(c.dataset.active==='true'){closeMissions();show('tasks');}
+  else toast(`「Task ${c.dataset.n} ${MISSIONS[+c.dataset.n-1].name}」建设中，敬请期待～`);
+});
+
+/* 关闭弹窗（× 或点遮罩空白处） */
+document.getElementById('mpClose').addEventListener('click',closeMissions);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeMissions()});
+
+/* 返回 */
+document.getElementById('backMissions').addEventListener('click',()=>{show('home');openMissions()});
+document.getElementById('backTasks').addEventListener('click',()=>{
+  document.getElementById('appFrame').src='';show('tasks');
+});
+
+/* 任务进入程序 */
+const TASKS={1:{file:'task1-challenge.html',title:'Task 1 · 闯关游戏--排序与配对'},2:{file:'task2-oral.html',title:'Task 2 · AI口语交际实训'}};
+document.querySelectorAll('.task-card').forEach(card=>card.addEventListener('click',()=>{
+  const t=TASKS[card.dataset.task];
+  document.getElementById('appTitle').textContent=t.title;
+  document.getElementById('appFrame').src=t.file;
+  show('app');
+}));
+</script>
+</body>
+</html>

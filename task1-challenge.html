@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Task 5 体检报告解读 · 闯关游戏（排序 + 配对）</title>
+<style>
+:root{
+  --white:#16223a; --bg:#0e1524; --text:#e8eefc; --text-light:#9fb0d0;
+  --blue:#5b9bf5; --blue-dark:#7db3ff; --blue-bg:#1b2b4a; --blue-border:#33507e;
+  --green:#4ade80; --green-bg:#123a2a;
+  --red:#f87171; --red-bg:#3a1b22;
+  --orange:#fbbf24; --orange-bg:#3a2a12;
+  --gold:#fcd34d; --gold-bg:#3a3112;
+  --purple:#c9a7ff;
+  --radius:10px; --shadow:0 4px 16px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+.game{max-width:1180px;margin:0 auto;padding:18px 22px 40px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;background:var(--white);border-radius:var(--radius);padding:14px 22px;box-shadow:var(--shadow);flex-wrap:wrap}
+.title-block .title{font-size:28px;font-weight:800;color:#cfe0ff}
+.title-block .subtitle{font-size:20px;color:var(--text-light);margin-top:4px}
+.stage-pill{display:inline-block;background:linear-gradient(135deg,#5b9bf5,#7D3C98);color:#fff;font-size:18px;font-weight:800;padding:5px 16px;border-radius:20px;margin-top:6px}
+.student-badge{display:none;background:var(--green-bg);color:var(--green);padding:6px 18px;border-radius:20px;font-size:20px;font-weight:800;margin-top:4px}
+.student-badge.show{display:inline-block}
+.timer{font-size:30px;font-weight:800;font-family:"Courier New",monospace;color:#7db3ff;letter-spacing:2px;min-width:120px;text-align:center}
+.timer.warning{color:var(--red)}
+.timer.paused{color:var(--orange)}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+.ctl{padding:12px 20px;border-radius:10px;font-size:22px;font-weight:700;background:var(--blue-bg);color:#9fc6ff;transition:all .15s}
+.ctl:hover{background:var(--blue);color:#fff}
+.ctl:active{transform:scale(.96)}
+.ctl.off{background:var(--red-bg);color:var(--red)}
+.ctl-submit{background:var(--blue);color:#fff}
+.ctl-submit:hover{background:#3a6fd8;color:#fff}
+.hint{text-align:center;color:var(--text-light);font-size:22px;margin:16px 0 12px}
+.stage-tabs{display:flex;justify-content:center;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
+.stage-tab{font-size:18px;font-weight:700;padding:8px 22px;border-radius:20px;background:var(--blue-bg);color:var(--text-light);border:2px solid transparent}
+.stage-tab.active{color:#fff;border-color:var(--blue)}
+.stage-tab.active.s1{background:#5b9bf5}
+.stage-tab.active.s2{background:#7D3C98}
+.stage-tab.done{color:var(--green);border-color:var(--green)}
+.pool-title,.slots-title{text-align:center;font-weight:800;font-size:24px;color:var(--blue-dark);margin:16px 0 12px}
+.pool{background:var(--white);border-radius:16px;padding:20px;box-shadow:var(--shadow);display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;justify-content:center;min-height:120px;align-items:stretch}
+.slots{display:grid;gap:16px;margin-top:6px}
+
+/* 排序卡片（按步骤身份分色） */
+.card{background:var(--blue-bg);border:3px solid var(--blue-border);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;touch-action:manipulation;box-shadow:0 4px 14px rgba(0,0,0,.3);min-height:120px;transition:all .15s}
+.card:hover{border-color:var(--blue)}
+.card.selected{border-color:var(--gold)!important;box-shadow:0 0 0 4px rgba(252,211,77,.28)!important}
+.card.used{opacity:.28;pointer-events:none}
+.card.c0{background:#1b2b4a!important;border-color:#33507e!important}
+.card.c1{background:#123a2a!important;border-color:#256b4a!important}
+.card.c2{background:#3a2a12!important;border-color:#7a5a1e!important}
+.card.c3{background:#2b1c42!important;border-color:#5e3a8a!important}
+.card-emoji{font-size:30px;flex-shrink:0;width:40px;text-align:center}
+.card-en{font-size:21px;font-weight:800;color:var(--blue-dark)}
+.card-zh{font-size:20px;font-weight:600;color:var(--text)}
+
+/* 排序空位 */
+.sortslot{background:var(--white);border:3px dashed var(--blue-border);border-radius:16px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;overflow:hidden}
+.sortslot:hover{border-color:var(--blue)}
+.sortslot.filled{border-style:solid;border-color:var(--blue)}
+.sortslot .num{position:absolute;top:8px;left:10px;font-size:18px;font-weight:800;color:#fff;background:#5b9bf5;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2}
+.sortslot .empty-hint{color:var(--text-light);font-size:20px}
+.sortslot .placed{display:flex;align-items:center;gap:10px;padding:8px 12px;max-width:100%}
+.sortslot .placed .rm{position:absolute;top:6px;right:10px;color:var(--red);font-size:22px;font-weight:700;z-index:2}
+
+/* 配对关 */
+.voice-bar{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;background:var(--white);border-radius:12px;padding:10px 16px;margin:0 auto 14px;max-width:760px;box-shadow:var(--shadow)}
+.voice-label{font-size:19px;font-weight:800;color:var(--blue-dark)}
+.voice-select{font-size:17px;padding:8px 12px;border:2px solid var(--blue-border);border-radius:10px;background:var(--bg);color:var(--text);max-width:320px;min-width:170px}
+.voice-test{font-size:17px;font-weight:700;padding:8px 18px;border-radius:10px;background:var(--blue);color:#fff}
+.voice-tip{font-size:15px;color:var(--text-light)}
+.phrase{background:var(--blue-bg);border:3px solid var(--blue-border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;user-select:none;touch-action:manipulation;transition:all .15s;min-height:104px}
+.phrase:hover{border-color:var(--blue)}
+.phrase.selected{border-color:var(--gold)!important;background:var(--gold-bg)!important;box-shadow:0 0 0 4px rgba(252,211,77,.28)!important}
+.phrase.used{opacity:.28;pointer-events:none}
+.speaker{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:#3a3112;border:2px solid #7a5a1e;font-size:22px;margin-right:12px;cursor:pointer;user-select:none;touch-action:manipulation;transition:transform .12s,background .15s}
+.speaker:hover{transform:scale(1.08)}
+.speaker:active{transform:scale(.94)}
+.speaker.speaking{animation:spkPulse .8s ease-in-out infinite}
+@keyframes spkPulse{0%,100%{box-shadow:0 0 0 0 rgba(243,156,18,.5)}50%{box-shadow:0 0 0 8px rgba(243,156,18,0)}}
+.phrase-text{flex:1;text-align:left;font-size:20px;font-weight:600;color:var(--text);line-height:1.4}
+.stage{background:var(--white);border:3px solid var(--blue-border);border-radius:16px;min-height:128px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;cursor:pointer;transition:all .15s;position:relative}
+.stage:hover{border-color:var(--blue)}
+.stage.c0{border-color:#33507e!important} .stage.c1{border-color:#256b4a!important} .stage.c2{border-color:#7a5a1e!important} .stage.c3{border-color:#5e3a8a!important}
+.stage-num{position:absolute;top:8px;left:10px;font-size:18px;font-weight:800;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.stage.c0 .stage-num{background:#2E6FA8} .stage.c1 .stage-num{background:#1E8449} .stage.c2 .stage-num{background:#CA6F1E} .stage.c3 .stage-num{background:#7D3C98}
+.stage-head{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.stage-emoji{font-size:26px}
+.stage-zh{font-size:22px;font-weight:800;color:var(--text)}
+.stage-en{font-size:18px;color:var(--text-light);font-weight:600}
+.stage-picked{margin-top:8px;font-size:17px;color:var(--gold);font-weight:700;line-height:1.3;text-align:center;max-width:100%}
+.stage-remove{position:absolute;top:6px;right:10px;color:var(--red);font-size:22px;font-weight:700;z-index:2}
+
+/* 弹窗 */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.box{background:var(--white);border-radius:16px;padding:30px 40px;text-align:center;max-width:520px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.box h2{font-size:28px;color:var(--blue-dark);margin-bottom:8px}
+.box .big{font-size:46px;font-weight:800;color:var(--blue-dark);margin:10px 0}
+.box .mut{font-size:20px;color:var(--text-light)}
+.rating-badge{display:inline-block;padding:7px 26px;border-radius:20px;font-size:22px;font-weight:800;margin:8px 0}
+.rating-badge.gold{background:var(--gold-bg);color:var(--gold)}
+.rating-badge.blue{background:var(--blue-bg);color:var(--blue-dark)}
+.rating-badge.green{background:var(--green-bg);color:var(--green)}
+.rating-badge.orange{background:var(--orange-bg);color:var(--orange)}
+.detail{text-align:left;background:var(--bg);border-radius:8px;padding:14px 18px;margin:12px 0;font-size:20px}
+.detail .row{display:flex;justify-content:space-between;padding:5px 0}
+.detail .row .v{font-weight:800;color:var(--blue-dark)}
+.btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.rules-box ul{list-style:disc;text-align:left;margin:14px 0 0 22px}
+.rules-box li{font-size:20px;margin:8px 0;color:var(--text)}
+
+/* 封面 */
+#modeScreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#111b30,#1b2b4a);padding:20px}
+.mode-emojis{font-size:32px;letter-spacing:16px;margin-bottom:18px}
+.mode-title{text-align:center;margin-bottom:34px}
+.mode-title h1{font-size:34px;background:linear-gradient(135deg,#7db3ff,#c9a7ff,#4ade80);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mode-title p{color:var(--text-light);font-size:22px;margin-top:8px}
+.mode-cards{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+.mode-card{background:#16223a;border-radius:16px;padding:34px 38px;text-align:center;cursor:pointer;transition:all .25s;border:2px solid #2a3a57;width:290px}
+.mode-card:hover{border-color:#5b9bf5;background:#1b2b4a;transform:translateY(-4px)}
+.mode-card .icon{font-size:50px;margin-bottom:14px}
+.mode-card h3{font-size:26px;color:#7db3ff;margin-bottom:8px}
+.mode-card p{font-size:21px;color:var(--text-light);line-height:1.7}
+.rules-link{margin-top:26px;color:var(--text-light);font-size:22px;cursor:pointer;text-decoration:underline}
+
+/* 学号页 */
+#studentScreen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#111b30,#1b2b4a);padding:20px}
+#studentScreen.show{display:flex}
+.student-title h2{font-size:30px;color:#7db3ff;margin-bottom:6px;text-align:center}
+.student-title p{color:var(--text-light);font-size:22px;text-align:center}
+.student-flow{color:var(--text-light);font-size:22px;margin:16px 0}
+.id-label{font-size:22px;font-weight:800;color:#7db3ff;margin-bottom:10px}
+.id-input{width:320px;max-width:80vw;text-align:center;font-size:30px;font-weight:800;color:#7db3ff;background:#0e1524;border:2px solid #33507e;border-radius:12px;padding:14px 18px;margin-bottom:22px;letter-spacing:2px;min-height:60px}
+.id-input.placeholder{color:#6b7a99;font-weight:600}
+.keypad{display:grid;grid-template-columns:repeat(3,84px);gap:14px;margin-bottom:22px}
+.key{height:64px;border-radius:12px;background:#16223a;border:2px solid #33507e;color:#9fc6ff;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.key:hover{background:#1b2b4a}
+.key.clear{background:#3a1b22;border-color:#7a2e38;color:#f87171;font-size:22px}
+.key.ok{background:#123a2a;border-color:#256b4a;color:#4ade80;font-size:22px}
+.start-btn{padding:16px 50px;border-radius:12px;font-size:23px;font-weight:800;background:#5b9bf5;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.back-link{margin-top:18px;color:var(--text-light);font-size:22px;cursor:pointer}
+.shake{animation:shakeX .4s}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+/* 学情面板 */
+#teacherDashboard{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:flex-start;background:linear-gradient(135deg,#111b30,#1b2b4a);padding:24px 16px 40px}
+.td-wrap{width:100%;max-width:980px}
+.td-head{text-align:center;margin-bottom:18px}
+.td-head h1{font-size:28px;color:#7db3ff;font-weight:800}
+.td-head p{font-size:19px;color:var(--text-light);margin-top:6px}
+.td-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.td-kpi{background:#16223a;border-radius:14px;padding:16px 10px;text-align:center;box-shadow:var(--shadow)}
+.td-kpi .lbl{font-size:17px;color:var(--text-light)}
+.td-kpi .val{font-size:28px;font-weight:800;margin-top:4px;color:#7db3ff}
+.td-kpi .val.green{color:#4ade80} .td-kpi .val.gold{color:#fcd34d} .td-kpi .val.red{color:#f87171}
+.td-main{display:grid;grid-template-columns:240px 1fr;gap:18px;margin-bottom:18px}
+.td-ring-box{background:#16223a;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;box-shadow:var(--shadow)}
+.td-ring-box .cap{font-size:15px;color:var(--text-light);margin-top:6px;text-align:center}
+.td-dist-box{background:#16223a;border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.td-dist-box h3{font-size:19px;color:#7db3ff;margin-bottom:12px}
+.td-bar-row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:15px;color:var(--text)}
+.td-bar-label{width:118px;flex-shrink:0;color:var(--text-light)}
+.td-bar-track{flex:1;height:16px;background:#0e1524;border-radius:8px;overflow:hidden}
+.td-bar-fill{height:100%;border-radius:8px}
+.td-bar-val{width:54px;text-align:right;color:var(--text);font-weight:600}
+.td-actions{display:flex;gap:14px;justify-content:center}
+.td-btn{padding:14px 30px;border-radius:12px;font-size:21px;font-weight:700}
+.td-btn.primary{background:#5b9bf5;color:#fff}
+.td-btn.ghost{background:#16223a;color:#7db3ff;border:2px solid #33507e}
+@media(max-width:768px){
+  .mode-cards{flex-direction:column}.mode-card{width:82%}
+  .mode-title h1{font-size:28px}.topbar{padding:12px 14px}
+  .title-block .title{font-size:24px}.timer{font-size:26px}
+  .pool{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .td-kpis{grid-template-columns:repeat(2,1fr)}.td-main{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="modeScreen">
+  <div class="mode-emojis">🚀 ⭐ ✨ ⭐ 🚀</div>
+  <div class="mode-title">
+    <h1>Task 5 体检报告解读 · 闯关游戏</h1>
+    <p>高职英语 · 两关挑战：排序 → 配对</p>
+  </div>
+  <div class="mode-cards">
+    <div class="mode-card" id="enterGameCard">
+      <div class="icon">🖥️</div>
+      <h3>教师大屏模式</h3>
+      <p>进入即看全班学情<br>30 份提交一键汇总<br>支持演示完整流程</p>
+    </div>
+    <div class="mode-card" id="studentCard">
+      <div class="icon">📱</div>
+      <h3>学生答题模式</h3>
+      <p>先排序再配对两关<br>每关即时得分反馈<br>支持触屏操作</p>
+    </div>
+  </div>
+  <div class="rules-link" id="rulesLink">📖 玩法说明</div>
+</div>
+
+<div id="teacherDashboard">
+  <div class="td-wrap">
+    <div class="td-head">
+      <h1>Task 5 体检报告解读 · 班级学情分析</h1>
+      <p>班级人数 30 · 已提交 30 · 合格线：正确 ≥ 2 / 4</p>
+    </div>
+    <div class="td-kpis">
+      <div class="td-kpi"><div class="lbl">平均正确数</div><div class="val" id="tdAvg">3.0 / 4</div></div>
+      <div class="td-kpi"><div class="lbl">合格率</div><div class="val green" id="tdRateTxt">90%</div></div>
+      <div class="td-kpi"><div class="lbl">满分（4）</div><div class="val gold" id="tdPerfect">12</div></div>
+      <div class="td-kpi"><div class="lbl">待提升（&lt;2）</div><div class="val red" id="tdLow">3</div></div>
+    </div>
+    <div class="td-main">
+      <div class="td-ring-box">
+        <svg viewBox="0 0 140 140" width="150" height="150" role="img" aria-label="合格率环形图">
+          <circle cx="70" cy="70" r="54" fill="none" stroke="#1b2b4a" stroke-width="16"></circle>
+          <circle id="tdRing" cx="70" cy="70" r="54" fill="none" stroke="#27AE60" stroke-width="16" stroke-linecap="round" stroke-dasharray="339.29" stroke-dashoffset="33.93" transform="rotate(-90 70 70)"></circle>
+          <text id="tdRingTxt" x="70" y="66" text-anchor="middle" font-size="26" font-weight="800" fill="#27AE60">90%</text>
+          <text id="tdRateSub" x="70" y="88" text-anchor="middle" font-size="13" fill="#9fb0d0">27 / 30 合格</text>
+        </svg>
+        <div class="cap">合格率（绿 ≥85 · 黄 70-84 · 红 &lt;70）</div>
+      </div>
+      <div class="td-dist-box">
+        <h3>各「正确数」人数分布</h3>
+        <div id="tdDist"></div>
+      </div>
+    </div>
+    <div class="td-actions">
+      <button class="td-btn primary" id="tdStartBtn">▶ 开始演示游戏</button>
+      <button class="td-btn ghost" id="tdBackBtn">← 返回封面</button>
+    </div>
+  </div>
+</div>
+
+<div id="studentScreen">
+  <div class="student-title">
+    <h2>学生答题模式</h2>
+    <p>输入你的学号，开始两关挑战！</p>
+  </div>
+  <div class="student-emojis" style="font-size:30px;letter-spacing:14px;margin:16px 0 10px">🎯 ✨ 🏆 ✨ 🎯</div>
+  <div class="student-flow">流程：输入学号 → 排序 → 配对 → 总成绩</div>
+  <div class="id-label">我的学号</div>
+  <div class="id-input placeholder" id="idInput">请输入学号</div>
+  <div class="keypad" id="keypad"></div>
+  <button class="start-btn" id="startAnswerBtn">开始答题 🚀</button>
+  <div class="back-link" id="backToCover">← 返回首页</div>
+</div>
+
+<div class="game" id="gameScreen" style="display:none">
+  <header class="topbar">
+    <div class="title-block">
+      <div class="title">Task 5 · 闯关游戏</div>
+      <div class="subtitle">Report interpretation challenge</div>
+      <span class="stage-pill" id="stagePill">第 1 关 / 共 2 关 · 排序</span>
+      <span class="student-badge" id="studentBadge"></span>
+    </div>
+    <div class="timer" id="timer">01:15</div>
+    <div class="controls">
+      <button class="ctl" id="homeGameBtn">🏠 返回主页</button>
+      <button class="ctl" id="pauseBtn">⏸ 暂停</button>
+      <button class="ctl" id="resetBtn">↻ 重置本关</button>
+      <button class="ctl" id="soundBtn">🔊 声音</button>
+      <button class="ctl ctl-submit" id="submitBtn">✔ 提交本关</button>
+    </div>
+  </header>
+
+  <div class="stage-tabs">
+    <span class="stage-tab active s1" id="tab1">① 四步骤排序</span>
+    <span class="stage-tab" id="tab2">② 句式配对</span>
+  </div>
+
+  <!-- 第一关：排序 -->
+  <div id="sortZone">
+    <div class="hint">先点上方一张流程卡（高亮），再点下方 1–4 号空位放入；按体检报告解读的真实时间顺序排列。点已放入的卡片可退回。</div>
+    <div class="pool-title">流程卡片（已打乱）</div>
+    <section class="pool" id="pool"></section>
+    <div class="slots-title">排序空位（1 → 4）</div>
+    <section class="slots" id="slots"></section>
+  </div>
+
+  <!-- 第二关：配对 -->
+  <div id="matchZone" style="display:none">
+    <div class="voice-bar">
+      <span class="voice-label">🗣️ 美式发音</span>
+      <select id="voiceSelect" class="voice-select" aria-label="选择本机美式英语语音"></select>
+      <button id="voiceTest" class="voice-test" type="button">▶ 试听</button>
+      <span class="voice-tip" id="voiceTip">使用本机安装的英语语音包</span>
+    </div>
+    <div class="hint">先点上方一个英文句式（高亮），再点下方对应阶段完成配对；点错了可再点一次退回。</div>
+    <div class="pool-title">英文句式（已打乱）</div>
+    <section class="pool" id="phrasePool"></section>
+    <div class="slots-title">解读阶段（点击阶段完成配对）</div>
+    <section class="slots" id="stageSlots"></section>
+  </div>
+</div>
+
+<!-- 关卡结算 -->
+<div class="overlay" id="stageModal">
+  <div class="box" id="stageBox">
+    <div class="big" id="stageIcon">🎉</div>
+    <h2 id="stageTitle">第一关完成！</h2>
+    <div class="mut" id="stageCorrect">正确 4 / 4</div>
+    <div class="rating-badge gold" id="stageBadge">满分</div>
+    <div class="big" id="stageScore">100 / 100</div>
+    <div class="btnrow">
+      <button class="ctl ctl-submit" id="nextStageBtn" style="font-size:20px;padding:12px 30px">进入第二关 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 总成绩 -->
+<div class="overlay" id="resultModal">
+  <div class="box">
+    <div class="big" id="resIcon">🏆</div>
+    <h2 id="resTitle">闯关完成</h2>
+    <div class="rating-badge gold" id="resBadge">满分</div>
+    <div class="big" id="resScore">100<span style="font-size:22px;color:var(--text-light)"> / 100</span></div>
+    <div class="detail" id="resDetail"></div>
+    <div class="btnrow">
+      <button class="ctl ctl-submit" id="replayBtn" style="font-size:19px;padding:12px 28px">再来一局</button>
+      <button class="ctl ctl-submit" id="homeBtn" style="font-size:19px;padding:12px 28px">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- 玩法说明 -->
+<div class="overlay" id="rulesModal">
+  <div class="box rules-box">
+    <h2>📖 玩法说明</h2>
+    <ul id="rulesList"></ul>
+    <div class="btnrow"><button class="ctl ctl-submit" id="rulesCloseBtn">知道了</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ===== 全局参数 ===== */
+const N = 4;
+const TOTAL_TIME = 75;
+const CORRECT_ORDER = [
+  { id:"overall",  en:"Overall Summary",    zh:"总体概述", emoji:"📋", desc:"Let's start with a brief summary of your health screening results." },
+  { id:"describe", en:"Describe Indicators", zh:"指标说明", emoji:"🔬", desc:"Next, I will go through your key laboratory indicators." },
+  { id:"explain",  en:"Explain Risks",       zh:"风险解读", emoji:"⚠️", desc:"Now let's talk about the possible health implications of these findings." },
+  { id:"advice",   en:"Give Advice",         zh:"健康建议", emoji:"💡", desc:"Here are practical recommendations based on your test results." }
+];
+
+/* ===== 状态 ===== */
+let currentStage = 1;
+let sortSlots = new Array(N).fill(null);
+let sortOrder = [];
+let selectedSort = null;
+let pairs = new Array(N).fill(null);
+let phraseOrder = [];
+let selectedPhrase = null;
+let scores = { 1:null, 2:null };
+let timeLeft = TOTAL_TIME;
+let timerInterval = null;
+let paused = false;
+let submitted = false;
+let soundOn = true;
+let currentStudentId = "";
+let gameEntry = "cover";
+
+/* ===== DOM ===== */
+const gameScreen = document.getElementById("gameScreen");
+const modeScreen = document.getElementById("modeScreen");
+const studentScreen = document.getElementById("studentScreen");
+const teacherDashboard = document.getElementById("teacherDashboard");
+const poolEl = document.getElementById("pool");
+const slotsEl = document.getElementById("slots");
+const phrasePoolEl = document.getElementById("phrasePool");
+const stageSlotsEl = document.getElementById("stageSlots");
+const sortZone = document.getElementById("sortZone");
+const matchZone = document.getElementById("matchZone");
+const timerEl = document.getElementById("timer");
+const pauseBtn = document.getElementById("pauseBtn");
+const soundBtn = document.getElementById("soundBtn");
+const stageModal = document.getElementById("stageModal");
+const resultModal = document.getElementById("resultModal");
+const rulesModal = document.getElementById("rulesModal");
+
+/* ===== 计分 ===== */
+function calcScore(correct, N){ return Math.round((correct / N) * 100); }
+function getRating(correct, N){
+  if(correct === N)                                  return { icon:"🏆", label:"满分",   cls:"gold"  };
+  if(correct >= Math.ceil(N * 0.75))                 return { icon:"⭐", label:"良好",   cls:"blue"  };
+  if(correct >= Math.ceil(N * 0.5))                  return { icon:"✅", label:"合格",   cls:"green" };
+  return                                               { icon:"📚", label:"待提升", cls:"orange" };
+}
+function evaluateSort(){
+  let c = 0;
+  for(let i = 0; i < CORRECT_ORDER.length; i++){ if(sortSlots[i] === CORRECT_ORDER[i].id) c++; }
+  return c;
+}
+function evaluateMatch(){
+  let c = 0;
+  for(let i = 0; i < CORRECT_ORDER.length; i++){ if(pairs[i] === CORRECT_ORDER[i].id) c++; }
+  return c;
+}
+
+/* ===== 声音（Web Audio 合成音效，无背景音乐） ===== */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+  }
+  if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+function tone(freq, start, dur, type, vol){
+  if(!audioCtx || !soundOn) return;
+  const t0 = audioCtx.currentTime + start;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type || "sine";
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(vol || 0.2, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.03);
+}
+function playSelect(){  ensureAudio(); tone(520, 0, 0.07, "sine", 0.14); }
+function playCorrect(){ ensureAudio(); tone(660, 0, 0.12, "sine", 0.20); tone(880, 0.10, 0.14, "sine", 0.20); }
+function playWrong(){   ensureAudio(); tone(180, 0, 0.18, "sawtooth", 0.18); }
+function playFanfare(){ ensureAudio(); const notes=[523,659,784,1047]; notes.forEach(function(f,i){ tone(f, i*0.12, 0.20, "triangle", 0.22); }); }
+
+/* ===== 美式发音（本机语音包） ===== */
+const voiceSelect = document.getElementById("voiceSelect");
+const voiceTip = document.getElementById("voiceTip");
+let enVoices = [];
+function voiceScore(v){
+  const n = (v.name || "") + " " + (v.voiceURI || "");
+  let s = 0;
+  if(/natural|neural|premium|online/i.test(n)) s += 100;
+  if(/aria|jenny|ana|ava|emma|guy|ryan|sonia|libby|michelle/i.test(n)) s += 50;
+  if(/^en[-_]us/i.test(v.lang)) s += 30;
+  else if(/^en[-_]gb/i.test(v.lang)) s += 10;
+  else if(/^en/i.test(v.lang)) s += 5;
+  if(/david|zira|mark|hazel|george|richard|default|compact/i.test(n)) s -= 20;
+  return s;
+}
+function getEnVoices(){
+  if(!("speechSynthesis" in window)) return [];
+  const all = window.speechSynthesis.getVoices() || [];
+  return all.filter(function(v){ return /^en/i.test(v.lang || ""); })
+            .sort(function(a,b){ return voiceScore(b) - voiceScore(a); });
+}
+function refreshVoices(){
+  enVoices = getEnVoices();
+  if(!voiceSelect) return;
+  const prev = voiceSelect.value;
+  voiceSelect.innerHTML = "";
+  if(enVoices.length === 0){
+    const o = document.createElement("option");
+    o.textContent = "未检测到本机英语语音包";
+    voiceSelect.appendChild(o);
+    if(voiceTip) voiceTip.textContent = "请在 Windows 设置 → 时间和语言 → 语音 中安装英语（美国）语音包";
+    return;
+  }
+  enVoices.forEach(function(v, i){
+    const o = document.createElement("option");
+    o.value = String(i);
+    o.textContent = v.name + " (" + v.lang + ")";
+    voiceSelect.appendChild(o);
+  });
+  voiceSelect.value = (prev && enVoices[parseInt(prev,10)]) ? prev : "0";
+  if(voiceTip) voiceTip.textContent = "已检测到 " + enVoices.length + " 个英语语音，可切换试听";
+}
+if("speechSynthesis" in window){
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+}
+function currentVoice(){
+  if(!voiceSelect || enVoices.length === 0) return null;
+  const i = parseInt(voiceSelect.value, 10);
+  return enVoices[isNaN(i) ? 0 : i] || null;
+}
+function speak(text, btn){
+  if(!("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = currentVoice();
+    if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
+    u.rate = 0.9; u.pitch = 1; u.volume = 1;
+    if(btn){
+      btn.classList.add("speaking");
+      u.onend = function(){ btn.classList.remove("speaking"); };
+      u.onerror = function(){ btn.classList.remove("speaking"); };
+    }
+    window.speechSynthesis.speak(u);
+  }catch(e){ if(btn) btn.classList.remove("speaking"); }
+}
+(function(){
+  const t = document.getElementById("voiceTest");
+  if(t) t.addEventListener("click", function(){ speak(CORRECT_ORDER[0].desc, this); });
+})();
+
+/* ===== 渲染：第一关排序 ===== */
+function stepIdxOf(id){ return CORRECT_ORDER.findIndex(function(c){ return c.id === id; }); }
+function renderSort(){
+  poolEl.innerHTML = "";
+  for(let i = 0; i < sortOrder.length; i++){
+    const id = sortOrder[i];
+    if(sortSlots.indexOf(id) === -1){
+      const item = CORRECT_ORDER.find(function(c){ return c.id === id; });
+      const el = document.createElement("div");
+      el.className = "card c" + stepIdxOf(id) + (selectedSort === id ? " selected" : "");
+      el.dataset.id = id;
+      el.innerHTML = '<span class="card-emoji">' + item.emoji + '</span>' +
+                     '<span><span class="card-en">' + item.en + '</span><br><span class="card-zh">' + item.zh + '</span></span>';
+      el.addEventListener("click", function(){ onSortCardClick(id); });
+      poolEl.appendChild(el);
+    }
+  }
+  for(let i = 0; i < N; i++){
+    const box = slotsEl.children[i];
+    box.innerHTML = "";
+    box.className = "sortslot" + (sortSlots[i] ? " filled" : "");
+    const num = document.createElement("div");
+    num.className = "num";
+    num.textContent = (i + 1);
+    box.appendChild(num);
+    if(sortSlots[i]){
+      const item = CORRECT_ORDER.find(function(c){ return c.id === sortSlots[i]; });
+      const pl = document.createElement("div");
+      pl.className = "placed";
+      pl.innerHTML = '<span style="font-size:26px">' + item.emoji + '</span>' +
+                     '<span><span class="card-en">' + item.en + '</span><br><span class="card-zh">' + item.zh + '</span></span>';
+      box.appendChild(pl);
+      const rm = document.createElement("div");
+      rm.className = "rm";
+      rm.textContent = "×";
+      rm.addEventListener("click", function(e){ e.stopPropagation(); sortSlots[i] = null; renderSort(); });
+      box.appendChild(rm);
+    } else {
+      const h = document.createElement("div");
+      h.className = "empty-hint";
+      h.textContent = "点此放入";
+      box.appendChild(h);
+    }
+    box.onclick = function(){ onSortSlotClick(i); };
+  }
+}
+function initSortSlots(){
+  slotsEl.innerHTML = "";
+  slotsEl.style.gridTemplateColumns = "repeat(" + N + ",1fr)";
+  for(let i = 0; i < N; i++){
+    const s = document.createElement("div");
+    s.className = "sortslot";
+    s.dataset.index = i;
+    slotsEl.appendChild(s);
+  }
+}
+function onSortCardClick(id){
+  if(paused || submitted) return;
+  ensureAudio();
+  if(sortSlots.indexOf(id) !== -1) return;
+  selectedSort = (selectedSort === id) ? null : id;
+  playSelect();
+  renderSort();
+}
+function onSortSlotClick(i){
+  if(paused || submitted) return;
+  ensureAudio();
+  if(!selectedSort){
+    if(sortSlots[i]){ sortSlots[i] = null; playSelect(); renderSort(); }
+    return;
+  }
+  const prev = sortSlots.indexOf(selectedSort);
+  if(prev !== -1) sortSlots[prev] = null;
+  sortSlots[i] = selectedSort;
+  if(selectedSort === CORRECT_ORDER[i].id) playCorrect(); else playWrong();
+  selectedSort = null;
+  renderSort();
+}
+
+/* ===== 渲染：第二关配对 ===== */
+function renderMatch(){
+  phrasePoolEl.innerHTML = "";
+  for(let i = 0; i < phraseOrder.length; i++){
+    const id = phraseOrder[i];
+    if(pairs.indexOf(id) === -1){
+      const item = CORRECT_ORDER.find(function(c){ return c.id === id; });
+      const el = document.createElement("div");
+      el.className = "phrase" + (selectedPhrase === id ? " selected" : "");
+      el.dataset.id = id;
+      const spk = document.createElement("span");
+      spk.className = "speaker";
+      spk.textContent = "🔊";
+      spk.title = "点击听标准美式发音";
+      spk.addEventListener("click", function(e){ e.stopPropagation(); speak(item.desc, spk); });
+      const txt = document.createElement("span");
+      txt.className = "phrase-text";
+      txt.textContent = item.desc;
+      el.appendChild(spk);
+      el.appendChild(txt);
+      el.addEventListener("click", function(){ onPhraseClick(id); });
+      phrasePoolEl.appendChild(el);
+    }
+  }
+  for(let i = 0; i < N; i++){
+    const box = stageSlotsEl.children[i];
+    const stage = CORRECT_ORDER[i];
+    box.innerHTML = "";
+    box.className = "stage c" + i + (pairs[i] ? " filled" : "");
+    const num = document.createElement("div");
+    num.className = "stage-num";
+    num.textContent = (i + 1);
+    box.appendChild(num);
+    const head = document.createElement("div");
+    head.className = "stage-head";
+    head.innerHTML = '<span class="stage-emoji">' + stage.emoji + '</span>' +
+      '<span class="stage-zh">' + stage.zh + '</span>' +
+      '<span class="stage-en">' + stage.en + '</span>';
+    box.appendChild(head);
+    if(pairs[i]){
+      const pitem = CORRECT_ORDER.find(function(c){ return c.id === pairs[i]; });
+      const picked = document.createElement("div");
+      picked.className = "stage-picked";
+      picked.textContent = "「" + pitem.desc + "」";
+      box.appendChild(picked);
+      const rm = document.createElement("div");
+      rm.className = "stage-remove";
+      rm.textContent = "×";
+      rm.addEventListener("click", function(e){ e.stopPropagation(); pairs[i] = null; renderMatch(); });
+      box.appendChild(rm);
+    }
+    box.onclick = function(){ onStageClick(i); };
+  }
+}
+function initStageSlots(){
+  stageSlotsEl.innerHTML = "";
+  stageSlotsEl.style.gridTemplateColumns = "repeat(" + N + ",1fr)";
+  for(let i = 0; i < N; i++){
+    const s = document.createElement("div");
+    s.className = "stage";
+    s.dataset.index = i;
+    stageSlotsEl.appendChild(s);
+  }
+}
+function onPhraseClick(id){
+  if(paused || submitted) return;
+  ensureAudio();
+  if(pairs.indexOf(id) !== -1) return;
+  selectedPhrase = (selectedPhrase === id) ? null : id;
+  playSelect();
+  renderMatch();
+}
+function onStageClick(i){
+  if(paused || submitted) return;
+  ensureAudio();
+  if(!selectedPhrase){
+    if(pairs[i]){ pairs[i] = null; playSelect(); renderMatch(); }
+    return;
+  }
+  const prev = pairs.indexOf(selectedPhrase);
+  if(prev !== -1) pairs[prev] = null;
+  pairs[i] = selectedPhrase;
+  if(selectedPhrase === CORRECT_ORDER[i].id) playCorrect(); else playWrong();
+  selectedPhrase = null;
+  renderMatch();
+}
+
+/* ===== 洗牌 ===== */
+function shuffled(){
+  const a = CORRECT_ORDER.map(function(c){ return c.id; });
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+/* ===== 流程控制 ===== */
+function fmt(t){
+  const m = Math.floor(t / 60);
+  const s = t % 60;
+  return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+}
+function updateTimer(){
+  timerEl.textContent = fmt(timeLeft);
+  timerEl.classList.toggle("warning", timeLeft <= 10 && !paused && !submitted);
+  timerEl.classList.toggle("paused", paused);
+}
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(function(){
+    if(paused || submitted) return;
+    timeLeft--;
+    updateTimer();
+    if(timeLeft <= 0){ clearInterval(timerInterval); doSubmit(true); }
+  }, 1000);
+}
+function updatePauseBtn(){
+  pauseBtn.textContent = paused ? "▶ 继续" : "⏸ 暂停";
+  pauseBtn.classList.toggle("off", paused);
+}
+function updateStageTabs(){
+  const t1 = document.getElementById("tab1");
+  const t2 = document.getElementById("tab2");
+  t1.className = "stage-tab";
+  t2.className = "stage-tab";
+  if(currentStage === 1){ t1.classList.add("active","s1"); }
+  else { t1.classList.add("done"); t2.classList.add("active","s2"); }
+}
+
+function startStage(n){
+  currentStage = n;
+  submitted = false;
+  paused = false;
+  timeLeft = TOTAL_TIME;
+  stageModal.classList.remove("show");
+  resultModal.classList.remove("show");
+  document.getElementById("stagePill").textContent = n === 1 ? "第 1 关 / 共 2 关 · 排序" : "第 2 关 / 共 2 关 · 配对";
+  if(n === 1){
+    sortZone.style.display = "";
+    matchZone.style.display = "none";
+    sortSlots = new Array(N).fill(null);
+    selectedSort = null;
+    sortOrder = shuffled();
+    renderSort();
+  } else {
+    sortZone.style.display = "none";
+    matchZone.style.display = "";
+    pairs = new Array(N).fill(null);
+    selectedPhrase = null;
+    phraseOrder = shuffled();
+    renderMatch();
+  }
+  updateStageTabs();
+  updateTimer();
+  updatePauseBtn();
+  startTimer();
+}
+
+function doSubmit(auto){
+  if(submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+  const correct = currentStage === 1 ? evaluateSort() : evaluateMatch();
+  const score = calcScore(correct, N);
+  scores[currentStage] = score;
+  const rating = getRating(correct, N);
+
+  document.getElementById("stageIcon").textContent = rating.icon;
+  document.getElementById("stageTitle").textContent = (currentStage === 1 ? "第一关" : "第二关") + (auto ? "时间到，已提交" : "完成！");
+  document.getElementById("stageCorrect").textContent = "正确 " + correct + " / " + N;
+  const badge = document.getElementById("stageBadge");
+  badge.textContent = rating.label;
+  badge.className = "rating-badge " + rating.cls;
+  document.getElementById("stageScore").textContent = score + " / 100";
+  document.getElementById("nextStageBtn").textContent = currentStage === 1 ? "进入第二关 →" : "查看总成绩 →";
+  stageModal.classList.add("show");
+  playFanfare();
+}
+
+function showFinal(){
+  stageModal.classList.remove("show");
+  const s1 = scores[1] || 0;
+  const s2 = scores[2] || 0;
+  const total = Math.round((s1 + s2) / 2);
+  const rating = getRating(Math.round(total / 100 * N), N);
+  document.getElementById("resIcon").textContent = rating.icon;
+  document.getElementById("resBadge").textContent = rating.label;
+  document.getElementById("resBadge").className = "rating-badge " + rating.cls;
+  document.getElementById("resScore").innerHTML = total + '<span style="font-size:22px;color:var(--text-light)"> / 100</span>';
+  const detail = document.getElementById("resDetail");
+  let html = '<div class="row"><span>第一关 · 排序</span><span class="v">' + s1 + ' / 100</span></div>' +
+             '<div class="row"><span>第二关 · 配对</span><span class="v">' + s2 + ' / 100</span></div>' +
+             '<div class="row"><span>总评（两关平均）</span><span class="v">' + total + ' / 100</span></div>';
+  if(currentStudentId){ html += '<div class="row"><span>学号</span><span class="v">' + currentStudentId + '</span></div>'; }
+  detail.innerHTML = html;
+  resultModal.classList.add("show");
+}
+
+function enterGame(studentId){
+  ensureAudio();
+  currentStudentId = studentId || "";
+  studentScreen.classList.remove("show");
+  modeScreen.style.display = "none";
+  teacherDashboard.style.display = "none";
+  gameScreen.style.display = "";
+  const badge = document.getElementById("studentBadge");
+  if(currentStudentId){ badge.textContent = "学号：" + currentStudentId; badge.classList.add("show"); }
+  else { badge.classList.remove("show"); }
+  scores = { 1:null, 2:null };
+  window.scrollTo(0, 0);
+  startStage(1);
+}
+
+function backHome(){
+  ensureAudio();
+  clearInterval(timerInterval);
+  submitted = false;
+  paused = false;
+  stageModal.classList.remove("show");
+  resultModal.classList.remove("show");
+  gameScreen.style.display = "none";
+  if(gameEntry === "teacher"){ teacherDashboard.style.display = "flex"; }
+  else { modeScreen.style.display = ""; }
+  window.scrollTo(0, 0);
+}
+
+/* ===== 控制按钮 ===== */
+pauseBtn.addEventListener("click", function(){
+  if(submitted) return;
+  paused = !paused;
+  updatePauseBtn();
+  updateTimer();
+});
+document.getElementById("resetBtn").addEventListener("click", function(){ ensureAudio(); startStage(currentStage); });
+soundBtn.addEventListener("click", function(){
+  soundOn = !soundOn;
+  soundBtn.textContent = soundOn ? "🔊 声音" : "🔇 静音";
+  soundBtn.classList.toggle("off", !soundOn);
+  if(soundOn){ ensureAudio(); playSelect(); }
+});
+document.getElementById("submitBtn").addEventListener("click", function(){ ensureAudio(); doSubmit(false); });
+document.getElementById("homeGameBtn").addEventListener("click", backHome);
+document.getElementById("nextStageBtn").addEventListener("click", function(){
+  ensureAudio();
+  if(currentStage === 1){ startStage(2); }
+  else { showFinal(); }
+});
+document.getElementById("replayBtn").addEventListener("click", function(){
+  ensureAudio();
+  scores = { 1:null, 2:null };
+  startStage(1);
+});
+document.getElementById("homeBtn").addEventListener("click", function(){
+  ensureAudio();
+  gameEntry = "cover";
+  backHome();
+});
+
+/* ===== 封面 / 学号 / 学情 ===== */
+document.getElementById("enterGameCard").addEventListener("click", function(){ showTeacherDashboard(); });
+document.getElementById("studentCard").addEventListener("click", function(){
+  ensureAudio();
+  modeScreen.style.display = "none";
+  studentScreen.classList.add("show");
+});
+document.getElementById("backToCover").addEventListener("click", function(){
+  studentScreen.classList.remove("show");
+  modeScreen.style.display = "";
+});
+document.getElementById("rulesLink").addEventListener("click", function(){
+  ensureAudio(); buildRules(); rulesModal.classList.add("show");
+});
+document.getElementById("rulesCloseBtn").addEventListener("click", function(){ rulesModal.classList.remove("show"); });
+rulesModal.addEventListener("click", function(e){ if(e.target === rulesModal) rulesModal.classList.remove("show"); });
+
+const PASS_LINE = 2;
+const CLASS_DATA = (function(){
+  const base = [];
+  const times4 = [23,27,31,34,38,42,47,51,56,60,65,71];
+  let n = 0;
+  const push = function(correct, time){ n++; base.push({ id:"2023"+String(n).padStart(3,"0"), name:"同学"+String(n).padStart(2,"0"), correct:correct, time:time }); };
+  for(let i=0;i<12;i++) push(4, times4[i]);
+  for(let i=0;i<9;i++)  push(3, 40+i*3);
+  for(let i=0;i<6;i++)  push(2, 50+i*4);
+  for(let i=0;i<2;i++)  push(1, 55+i*5);
+  push(0, 68);
+  return base;
+})();
+function renderTeacherDashboard(){
+  const TOTAL = CLASS_DATA.length;
+  let pass=0, perfect=0, low=0, sum=0;
+  const dist = {4:0,3:0,2:0,1:0,0:0};
+  CLASS_DATA.forEach(function(s){
+    sum += s.correct; dist[s.correct]++;
+    if(s.correct >= PASS_LINE) pass++;
+    if(s.correct === 4) perfect++;
+    if(s.correct <  PASS_LINE) low++;
+  });
+  const rate = Math.round(pass / TOTAL * 100);
+  const avg  = (sum / TOTAL).toFixed(1);
+  document.getElementById("tdAvg").textContent = avg + " / 4";
+  document.getElementById("tdRateTxt").textContent = rate + "%";
+  document.getElementById("tdRingTxt").textContent = rate + "%";
+  document.getElementById("tdRateSub").textContent = pass + " / " + TOTAL + " 合格";
+  document.getElementById("tdPerfect").textContent = perfect;
+  document.getElementById("tdLow").textContent = low;
+  const ring = document.getElementById("tdRing");
+  const circ = 2 * Math.PI * 54;
+  ring.setAttribute("stroke-dasharray", circ.toFixed(2));
+  ring.setAttribute("stroke-dashoffset", (circ * (1 - rate/100)).toFixed(2));
+  ring.setAttribute("stroke", rate>=85 ? "#27AE60" : rate>=70 ? "#F39C12" : "#E74C3C");
+  const bars = [
+    {k:4, label:"4（满分）", color:"#27AE60"},
+    {k:3, label:"3",         color:"#4A90D9"},
+    {k:2, label:"2（合格线）", color:"#4A90D9"},
+    {k:1, label:"1",         color:"#F39C12"},
+    {k:0, label:"0",         color:"#E74C3C"}
+  ];
+  const distEl = document.getElementById("tdDist");
+  distEl.innerHTML = "";
+  bars.forEach(function(b){
+    const c = dist[b.k];
+    const pct = Math.round(c / TOTAL * 100);
+    const row = document.createElement("div");
+    row.className = "td-bar-row";
+    row.innerHTML = '<span class="td-bar-label">'+b.label+'</span>'+
+      '<div class="td-bar-track"><div class="td-bar-fill" style="width:'+pct+'%;background:'+b.color+'"></div></div>'+
+      '<span class="td-bar-val">'+c+' 人</span>';
+    distEl.appendChild(row);
+  });
+}
+function showTeacherDashboard(){
+  modeScreen.style.display = "none";
+  studentScreen.classList.remove("show");
+  gameScreen.style.display = "none";
+  teacherDashboard.style.display = "flex";
+  renderTeacherDashboard();
+  window.scrollTo(0, 0);
+}
+document.getElementById("tdStartBtn").addEventListener("click", function(){
+  ensureAudio();
+  gameEntry = "teacher";
+  enterGame("");
+});
+document.getElementById("tdBackBtn").addEventListener("click", function(){
+  teacherDashboard.style.display = "none";
+  modeScreen.style.display = "";
+  window.scrollTo(0, 0);
+});
+
+/* 学号键盘 */
+const idInput = document.getElementById("idInput");
+const keypadEl = document.getElementById("keypad");
+function updateIdInput(){
+  if(currentStudentId){ idInput.textContent = currentStudentId; idInput.classList.remove("placeholder"); }
+  else { idInput.textContent = "请输入学号"; idInput.classList.add("placeholder"); }
+}
+function buildKeypad(){
+  const keys = ["1","2","3","4","5","6","7","8","9","清空","0","确定"];
+  keypadEl.innerHTML = "";
+  keys.forEach(function(v){
+    const k = document.createElement("div");
+    k.className = "key" + (v === "清空" ? " clear" : v === "确定" ? " ok" : "");
+    k.textContent = v;
+    k.addEventListener("click", function(){
+      ensureAudio();
+      if(v === "清空"){ currentStudentId = ""; playSelect(); }
+      else if(v === "确定"){
+        if(!currentStudentId){ idInput.classList.remove("shake"); void idInput.offsetWidth; idInput.classList.add("shake"); playWrong(); return; }
+        playCorrect();
+      }
+      else { if(currentStudentId.length >= 12) return; currentStudentId += v; playSelect(); }
+      updateIdInput();
+    });
+    keypadEl.appendChild(k);
+  });
+}
+document.getElementById("startAnswerBtn").addEventListener("click", function(){
+  ensureAudio();
+  if(!currentStudentId){
+    idInput.classList.remove("shake"); void idInput.offsetWidth; idInput.classList.add("shake");
+    playWrong(); return;
+  }
+  gameEntry = "student";
+  enterGame(currentStudentId);
+});
+
+function buildRules(){
+  const items = [
+    "本游戏共两关：第一关四步骤排序，第二关句式配对。",
+    "每关限时 " + TOTAL_TIME + " 秒，独立计时、独立计分（满分 100）。",
+    "第一关：点流程卡 → 点 1–4 号位放入，按真实时间顺序排列。",
+    "第二关：点英文句式 → 点对应阶段配对；点 🔊 可听标准美式发音。",
+    "计分：每关正确数 ÷ " + N + " × 100；总评为两关平均分。",
+    "评级：满分 🏆 / 良好 ⭐ / 合格 ✅ / 待提升 📚。",
+    "顶部按钮：⏸ 暂停、↻ 重置本关、🔊 声音开关、✔ 提交本关。"
+  ];
+  const ul = document.getElementById("rulesList");
+  ul.innerHTML = "";
+  items.forEach(function(t){
+    const li = document.createElement("li");
+    li.textContent = t;
+    ul.appendChild(li);
+  });
+}
+
+/* 初始化 */
+initSortSlots();
+initStageSlots();
+buildKeypad();
+renderSort();
+renderMatch();
+updateTimer();
+updatePauseBtn();
+updateStageTabs();
+</script>
+</body>
+</html>
