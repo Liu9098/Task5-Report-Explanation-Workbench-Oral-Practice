@@ -181,6 +181,13 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
   .pool{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
   .td-kpis{grid-template-columns:repeat(2,1fr)}.td-main{grid-template-columns:1fr}
 }
+
+/* 第二关学情面板（与第一关布局完全对齐） */
+#matchDashboard{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:flex-start;background:linear-gradient(135deg,#111b30,#1b2b4a);padding:24px 16px 40px}
+.td-errors-box{background:#16223a;border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
+.td-errors-box h3{font-size:19px;color:#7db3ff;margin-bottom:12px}
+.td-errors-box .td-bar-label{width:250px}
+.td-errors-note{font-size:16px;color:#fbbf24;margin-top:10px;text-align:center}
 </style>
 </head>
 <body>
@@ -240,6 +247,53 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
   </div>
 </div>
 
+<!-- 第二关 · 句式配对 学情分析 -->
+<div id="matchDashboard">
+  <div class="td-wrap">
+    <div class="td-head">
+      <h1>Task 5 体检报告解读 · 第二关句式配对 班级学情分析</h1>
+      <p>班级人数 30 · 已提交 30 · 合格线：正确 ≥ 2 / 4</p>
+    </div>
+    <div class="td-kpis">
+      <div class="td-kpi"><div class="lbl">平均正确数</div><div class="val">3.1 / 4</div></div>
+      <div class="td-kpi"><div class="lbl">合格率</div><div class="val green">90%</div></div>
+      <div class="td-kpi"><div class="lbl">满分（4）</div><div class="val gold">15</div></div>
+      <div class="td-kpi"><div class="lbl">待提升（&lt;2）</div><div class="val red">3</div></div>
+    </div>
+    <div class="td-main">
+      <div class="td-ring-box">
+        <svg viewBox="0 0 140 140" width="150" height="150" role="img" aria-label="合格率环形图">
+          <circle cx="70" cy="70" r="54" fill="none" stroke="#1b2b4a" stroke-width="16"></circle>
+          <circle cx="70" cy="70" r="54" fill="none" stroke="#27AE60" stroke-width="16" stroke-linecap="round" stroke-dasharray="339.29" stroke-dashoffset="33.93" transform="rotate(-90 70 70)"></circle>
+          <text x="70" y="66" text-anchor="middle" font-size="26" font-weight="800" fill="#27AE60">90%</text>
+          <text x="70" y="88" text-anchor="middle" font-size="13" fill="#9fb0d0">27 / 30 合格</text>
+        </svg>
+        <div class="cap">合格率（绿 ≥85 · 黄 70-84 · 红 &lt;70）</div>
+      </div>
+      <div class="td-dist-box">
+        <h3>各「正确数」人数分布</h3>
+        <div class="td-bar-row"><span class="td-bar-label">4（满分）</span><div class="td-bar-track"><div class="td-bar-fill" style="width:100%;background:#27AE60"></div></div><span class="td-bar-val">15 人</span></div>
+        <div class="td-bar-row"><span class="td-bar-label">3</span><div class="td-bar-track"><div class="td-bar-fill" style="width:53%;background:#4A90D9"></div></div><span class="td-bar-val">8 人</span></div>
+        <div class="td-bar-row"><span class="td-bar-label">2（合格线）</span><div class="td-bar-track"><div class="td-bar-fill" style="width:27%;background:#4A90D9"></div></div><span class="td-bar-val">4 人</span></div>
+        <div class="td-bar-row"><span class="td-bar-label">1</span><div class="td-bar-track"><div class="td-bar-fill" style="width:13%;background:#F39C12"></div></div><span class="td-bar-val">2 人</span></div>
+        <div class="td-bar-row"><span class="td-bar-label">0</span><div class="td-bar-track"><div class="td-bar-fill" style="width:7%;background:#E74C3C"></div></div><span class="td-bar-val">1 人</span></div>
+      </div>
+    </div>
+    <div class="td-errors-box">
+      <h3>各小题错误人数</h3>
+      <div class="td-bar-row"><span class="td-bar-label">小题1 开场句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:31%;background:#F39C12"></div></div><span class="td-bar-val">4 人</span></div>
+      <div class="td-bar-row"><span class="td-bar-label">小题2 指标句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:46%;background:#F39C12"></div></div><span class="td-bar-val">6 人</span></div>
+      <div class="td-bar-row"><span class="td-bar-label">小题3 风险提示句（implication）</span><div class="td-bar-track"><div class="td-bar-fill" style="width:100%;background:#E74C3C"></div></div><span class="td-bar-val">13 人</span></div>
+      <div class="td-bar-row"><span class="td-bar-label">小题4 健康建议句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:23%;background:#F39C12"></div></div><span class="td-bar-val">3 人</span></div>
+      <div class="td-errors-note">⚠ 风险提示句错误人数明显最多，是共性语言难点。</div>
+    </div>
+    <div class="td-actions">
+      <button class="td-btn primary" id="mdStartBtn">▶ 开始演示游戏</button>
+      <button class="td-btn ghost" id="mdBackBtn">← 返回封面</button>
+    </div>
+  </div>
+</div>
+
 <div id="studentScreen">
   <div class="student-title">
     <h2>学生答题模式</h2>
@@ -268,6 +322,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <button class="ctl" id="pauseBtn">⏸ 暂停</button>
       <button class="ctl" id="resetBtn">↻ 重置本关</button>
       <button class="ctl" id="soundBtn">🔊 声音</button>
+      <button class="ctl" id="dashBtn">📊 学情分析</button>
       <button class="ctl ctl-submit" id="submitBtn">✔ 提交本关</button>
     </div>
   </header>
@@ -279,7 +334,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 
   <!-- 第一关：排序 -->
   <div id="sortZone">
-    <div class="hint">先点上方一张流程卡（高亮），再点下方 1–4 号空位放入；按体检报告解读的真实时间顺序排列。点已放入的卡片可退回。</div>
+    <div class="hint">First click a flow card above (it will be highlighted), then click a slot (1–4) below to place it. Arrange the steps in the real chronological order of a health report interpretation. Click a placed card to take it back.</div>
     <div class="pool-title">流程卡片（已打乱）</div>
     <section class="pool" id="pool"></section>
     <div class="slots-title">排序空位（1 → 4）</div>
@@ -294,7 +349,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <button id="voiceTest" class="voice-test" type="button">▶ 试听</button>
       <span class="voice-tip" id="voiceTip">使用本机安装的英语语音包</span>
     </div>
-    <div class="hint">先点上方一个英文句式（高亮），再点下方对应阶段完成配对；点错了可再点一次退回。</div>
+    <div class="hint">First click an English sentence above (it will be highlighted), then click the matching stage below. Click again to undo a wrong match.</div>
     <div class="pool-title">英文句式（已打乱）</div>
     <section class="pool" id="phrasePool"></section>
     <div class="slots-title">解读阶段（点击阶段完成配对）</div>
@@ -375,6 +430,9 @@ const gameScreen = document.getElementById("gameScreen");
 const modeScreen = document.getElementById("modeScreen");
 const studentScreen = document.getElementById("studentScreen");
 const teacherDashboard = document.getElementById("teacherDashboard");
+const matchDashboard = document.getElementById("matchDashboard");
+let dashFrom = "cover";
+let dashStage = 1;
 const poolEl = document.getElementById("pool");
 const slotsEl = document.getElementById("slots");
 const phrasePoolEl = document.getElementById("phrasePool");
@@ -545,7 +603,7 @@ function renderSort(){
     } else {
       const h = document.createElement("div");
       h.className = "empty-hint";
-      h.textContent = "点此放入";
+      h.textContent = "Click to place";
       box.appendChild(h);
     }
     box.onclick = function(){ onSortSlotClick(i); };
@@ -597,7 +655,7 @@ function renderMatch(){
       const spk = document.createElement("span");
       spk.className = "speaker";
       spk.textContent = "🔊";
-      spk.title = "点击听标准美式发音";
+      spk.title = "Click to listen to standard American English pronunciation";
       spk.addEventListener("click", function(e){ e.stopPropagation(); speak(item.desc, spk); });
       const txt = document.createElement("span");
       txt.className = "phrase-text";
@@ -716,6 +774,7 @@ function updateStageTabs(){
 
 function startStage(n){
   currentStage = n;
+  dashStage = n;
   submitted = false;
   paused = false;
   timeLeft = TOTAL_TIME;
@@ -806,7 +865,7 @@ function backHome(){
   stageModal.classList.remove("show");
   resultModal.classList.remove("show");
   gameScreen.style.display = "none";
-  if(gameEntry === "teacher"){ teacherDashboard.style.display = "flex"; }
+  if(gameEntry === "teacher"){ (dashStage === 2 ? matchDashboard : teacherDashboard).style.display = "flex"; }
   else { modeScreen.style.display = ""; }
   window.scrollTo(0, 0);
 }
@@ -917,6 +976,8 @@ function renderTeacherDashboard(){
   });
 }
 function showTeacherDashboard(){
+  dashFrom = "cover";
+  dashStage = 1;
   modeScreen.style.display = "none";
   studentScreen.classList.remove("show");
   gameScreen.style.display = "none";
@@ -924,16 +985,41 @@ function showTeacherDashboard(){
   renderTeacherDashboard();
   window.scrollTo(0, 0);
 }
-document.getElementById("tdStartBtn").addEventListener("click", function(){
-  ensureAudio();
-  gameEntry = "teacher";
-  enterGame("");
-});
-document.getElementById("tdBackBtn").addEventListener("click", function(){
-  teacherDashboard.style.display = "none";
+function resumeFromDashboard(n){
+  if(dashFrom === "game"){
+    (n === 1 ? teacherDashboard : matchDashboard).style.display = "none";
+    gameScreen.style.display = "";
+    gameEntry = "teacher";
+    startStage(n);
+    window.scrollTo(0, 0);
+  } else {
+    gameEntry = "teacher";
+    enterGame("");
+  }
+}
+function dashBackToCover(n){
+  (n === 1 ? teacherDashboard : matchDashboard).style.display = "none";
   modeScreen.style.display = "";
+  dashFrom = "cover";
   window.scrollTo(0, 0);
-});
+}
+function openDashboard(n){
+  clearInterval(timerInterval);
+  paused = true; updatePauseBtn();
+  dashFrom = "game";
+  dashStage = n;
+  gameScreen.style.display = "none";
+  modeScreen.style.display = "none";
+  studentScreen.classList.remove("show");
+  (n === 1 ? teacherDashboard : matchDashboard).style.display = "flex";
+  if(n === 1) renderTeacherDashboard();
+  window.scrollTo(0, 0);
+}
+document.getElementById("dashBtn").addEventListener("click", function(){ ensureAudio(); openDashboard(currentStage); });
+document.getElementById("tdStartBtn").addEventListener("click", function(){ ensureAudio(); resumeFromDashboard(1); });
+document.getElementById("mdStartBtn").addEventListener("click", function(){ ensureAudio(); resumeFromDashboard(2); });
+document.getElementById("tdBackBtn").addEventListener("click", function(){ dashBackToCover(1); });
+document.getElementById("mdBackBtn").addEventListener("click", function(){ dashBackToCover(2); });
 
 /* 学号键盘 */
 const idInput = document.getElementById("idInput");
