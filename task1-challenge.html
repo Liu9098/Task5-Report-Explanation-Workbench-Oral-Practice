@@ -100,7 +100,9 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 /* 弹窗 */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center}
 .overlay.show{display:flex}
-.box{background:var(--white);border-radius:16px;padding:30px 40px;text-align:center;max-width:520px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.box{background:var(--white);border-radius:16px;padding:30px 40px;text-align:center;max-width:520px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.45);position:relative}
+.box-close{position:absolute;top:12px;right:16px;border:none;background:none;color:var(--text-light);font-size:30px;line-height:1;cursor:pointer;z-index:2}
+.box-close:hover{color:var(--red)}
 .box h2{font-size:28px;color:var(--blue-dark);margin-bottom:8px}
 .box .big{font-size:46px;font-weight:800;color:var(--blue-dark);margin:10px 0}
 .box .mut{font-size:20px;color:var(--text-light)}
@@ -174,6 +176,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 .td-btn{padding:14px 30px;border-radius:12px;font-size:21px;font-weight:700}
 .td-btn.primary{background:#5b9bf5;color:#fff}
 .td-btn.ghost{background:#16223a;color:#7db3ff;border:2px solid #33507e}
+.td-btn.next{background:linear-gradient(135deg,#7D3C98,#5a2f96);color:#fff}
 @media(max-width:768px){
   .mode-cards{flex-direction:column}.mode-card{width:82%}
   .mode-title h1{font-size:28px}.topbar{padding:12px 14px}
@@ -243,6 +246,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
     <div class="td-actions">
       <button class="td-btn primary" id="tdStartBtn">▶ 开始演示游戏</button>
       <button class="td-btn ghost" id="tdBackBtn">← 返回封面</button>
+      <button class="td-btn next" id="tdNextStageBtn">进入第二关 →</button>
     </div>
   </div>
 </div>
@@ -283,7 +287,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <h3>各小题错误人数</h3>
       <div class="td-bar-row"><span class="td-bar-label">小题1 开场句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:31%;background:#F39C12"></div></div><span class="td-bar-val">4 人</span></div>
       <div class="td-bar-row"><span class="td-bar-label">小题2 指标句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:46%;background:#F39C12"></div></div><span class="td-bar-val">6 人</span></div>
-      <div class="td-bar-row"><span class="td-bar-label">小题3 风险提示句（implication）</span><div class="td-bar-track"><div class="td-bar-fill" style="width:100%;background:#E74C3C"></div></div><span class="td-bar-val">13 人</span></div>
+      <div class="td-bar-row"><span class="td-bar-label">小题3 风险提示句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:100%;background:#E74C3C"></div></div><span class="td-bar-val">13 人</span></div>
       <div class="td-bar-row"><span class="td-bar-label">小题4 健康建议句</span><div class="td-bar-track"><div class="td-bar-fill" style="width:23%;background:#F39C12"></div></div><span class="td-bar-val">3 人</span></div>
       <div class="td-errors-note">⚠ 风险提示句错误人数明显最多，是共性语言难点。</div>
     </div>
@@ -360,6 +364,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 <!-- 关卡结算 -->
 <div class="overlay" id="stageModal">
   <div class="box" id="stageBox">
+    <button class="box-close" id="stageCloseBtn" title="关闭">×</button>
     <div class="big" id="stageIcon">🎉</div>
     <h2 id="stageTitle">第一关完成！</h2>
     <div class="mut" id="stageCorrect">正确 4 / 4</div>
@@ -1020,6 +1025,16 @@ document.getElementById("tdStartBtn").addEventListener("click", function(){ ensu
 document.getElementById("mdStartBtn").addEventListener("click", function(){ ensureAudio(); resumeFromDashboard(2); });
 document.getElementById("tdBackBtn").addEventListener("click", function(){ dashBackToCover(1); });
 document.getElementById("mdBackBtn").addEventListener("click", function(){ dashBackToCover(2); });
+document.getElementById("tdNextStageBtn").addEventListener("click", function(){
+  ensureAudio();
+  teacherDashboard.style.display = "none";
+  gameScreen.style.display = "";
+  gameEntry = "teacher";
+  startStage(2);
+  window.scrollTo(0, 0);
+});
+/* 结算弹窗右上角关闭：关掉后可点顶部“学情分析” */
+document.getElementById("stageCloseBtn").addEventListener("click", function(){ stageModal.classList.remove("show"); });
 
 /* 学号键盘 */
 const idInput = document.getElementById("idInput");
