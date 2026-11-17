@@ -172,6 +172,15 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 .td-bar-track{flex:1;height:16px;background:#0e1524;border-radius:8px;overflow:hidden}
 .td-bar-fill{height:100%;border-radius:8px}
 .td-bar-val{width:54px;text-align:right;color:var(--text);font-weight:600}
+.td-typical{background:#16223a;border-radius:14px;padding:16px 20px;box-shadow:var(--shadow);margin-bottom:18px}
+.td-typical h3{font-size:19px;color:#7db3ff;margin-bottom:6px}
+.td-typical .sub-en{font-size:15px;color:var(--text-light);font-weight:600;margin-bottom:12px}
+.typ-row{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:8px 0;border-radius:10px;font-size:18px;color:var(--text);background:#0e1524}
+.typ-row.hot{background:rgba(248,113,113,.14);border:1.5px solid rgba(248,113,113,.55);color:#ffd7d7;font-weight:700}
+.typ-row .typ-icon{font-size:20px;flex-shrink:0}
+.typ-row .typ-name{flex:1}
+.typ-row .typ-val{font-weight:800;color:#f87171;font-size:22px}
+.typ-row:not(.hot) .typ-val{color:#fcd34d}
 .td-actions{display:flex;gap:14px;justify-content:center}
 .td-btn{padding:14px 30px;border-radius:12px;font-size:21px;font-weight:700}
 .td-btn.primary{background:#5b9bf5;color:#fff}
@@ -219,7 +228,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 <div id="teacherDashboard">
   <div class="td-wrap">
     <div class="td-head">
-      <h1>Task 5 体检报告解读 · 班级学情分析</h1>
+      <h1>Task 5 体检报告解读 · 第一关结构排序 班级学情分析</h1>
       <p>班级人数 30 · 已提交 30 · 合格线：正确 ≥ 2 / 4</p>
     </div>
     <div class="td-kpis">
@@ -241,6 +250,20 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <div class="td-dist-box">
         <h3>各「正确数」人数分布</h3>
         <div id="tdDist"></div>
+      </div>
+    </div>
+    <div class="td-typical">
+      <h3>典型错误分布</h3>
+      <div class="sub-en">Typical Error Distribution</div>
+      <div class="typ-row hot">
+        <span class="typ-icon">⚠️</span>
+        <span class="typ-name">健康建议置于风险提示之前</span>
+        <span class="typ-val">10 人</span>
+      </div>
+      <div class="typ-row">
+        <span class="typ-icon">•</span>
+        <span class="typ-name">其他零散排序错误</span>
+        <span class="typ-val">8 人</span>
       </div>
     </div>
     <div class="td-actions">
