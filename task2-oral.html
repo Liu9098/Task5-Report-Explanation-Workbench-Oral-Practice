@@ -707,9 +707,8 @@ body.mobile-student #bgmBtn{bottom:12px;right:12px;min-width:84px;padding:8px 12
     <div class="login-box">
       <h2>🗣️ 体检报告解读</h2>
       <p class="course">Health Check-up Report Interpretation — 体检报告解读 · 健康顾问</p>
-      <div class="form-group">
-        <label>请输入学号</label>
-        <input type="text" id="studentIdInput" placeholder="输入你的学号" onkeydown="if(event.key==='Enter')startStudentPractice()">
+      <div class="form-group" style="display:none">
+        <input type="text" id="studentIdInput" value="同学">
       </div>
       <button class="btn btn-primary btn-lg" style="width:100%" onclick="startStudentPractice()">开始练习 →</button>
       <div class="info-list">
@@ -2369,14 +2368,8 @@ function applyEmpathyEdit(){
 
 // ===================== Student Functions =====================
 function startStudentPractice(){
-  var nameInput=document.getElementById('studentIdInput');
-  var name=nameInput.value.trim();
-  if(!name){
-    nameInput.style.borderColor='var(--error)';
-    nameInput.placeholder='请先输入学号';
-    nameInput.focus();
-    return;
-  }
+  // 免输学号：直接进入练习，使用默认名
+  var name='同学';
   try{
     state.studentName=name;
     state.studentId=name;
