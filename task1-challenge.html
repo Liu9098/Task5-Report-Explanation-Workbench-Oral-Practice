@@ -343,10 +343,10 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <span class="stage-pill" id="stagePill">第 1 关 / 共 2 关 · 排序</span>
       <span class="student-badge" id="studentBadge"></span>
     </div>
-    <div class="timer" id="timer">01:15</div>
+    <div class="timer" id="timer" style="display:none">01:15</div>
     <div class="controls">
       <button class="ctl" id="homeGameBtn">🏠 返回主页</button>
-      <button class="ctl" id="pauseBtn">⏸ 暂停</button>
+      <button class="ctl" id="pauseBtn" style="display:none">⏸ 暂停</button>
       <button class="ctl" id="resetBtn">↻ 重置本关</button>
       <button class="ctl" id="soundBtn">🔊 声音</button>
       <button class="ctl" id="dashBtn">📊 学情分析</button>
@@ -779,13 +779,9 @@ function updateTimer(){
   timerEl.classList.toggle("paused", paused);
 }
 function startTimer(){
+  // 倒计时已取消：清掉任何残留定时器，不再自动计时/到时交卷
   clearInterval(timerInterval);
-  timerInterval = setInterval(function(){
-    if(paused || submitted) return;
-    timeLeft--;
-    updateTimer();
-    if(timeLeft <= 0){ clearInterval(timerInterval); doSubmit(true); }
-  }, 1000);
+  timerInterval = null;
 }
 function updatePauseBtn(){
   pauseBtn.textContent = paused ? "▶ 继续" : "⏸ 暂停";
@@ -1099,7 +1095,7 @@ document.getElementById("startAnswerBtn").addEventListener("click", function(){
 function buildRules(){
   const items = [
     "本游戏共两关：第一关四步骤排序，第二关句式配对。",
-    "每关限时 " + TOTAL_TIME + " 秒，独立计时、独立计分（满分 100）。",
+    "每关不限时，独立完成、独立计分（满分 100）。",
     "第一关：点流程卡 → 点 1–4 号位放入，按真实时间顺序排列。",
     "第二关：点英文句式 → 点对应阶段配对；点 🔊 可听标准美式发音。",
     "计分：每关正确数 ÷ " + N + " × 100；总评为两关平均分。",

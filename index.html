@@ -364,7 +364,7 @@ document.getElementById('backTasks').addEventListener('click',()=>{
 });
 
 /* 任务进入程序 */
-const TASKS={1:{file:'task1-challenge.html',title:'Task 1 · 闯关游戏--排序与配对'},2:{file:'task2-oral.html',title:'Task 2 · AI口语交际实训'}};
+const TASKS={1:{file:'task1-challenge.html',title:'结构排序和句式配对'},2:{file:'task2-oral.html',title:'Task 2 · AI口语交际实训'}};
 document.querySelectorAll('.task-card').forEach(card=>card.addEventListener('click',()=>{
   const t=TASKS[card.dataset.task];
   document.getElementById('appTitle').textContent=t.title;
