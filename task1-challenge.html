@@ -315,7 +315,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <div class="td-errors-note">⚠ 风险提示句错误人数明显最多，是共性语言难点。</div>
     </div>
     <div class="td-actions">
-      <button class="td-btn primary" id="mdStartBtn">▶ 开始演示游戏</button>
+      <button class="td-btn primary" id="mdStartBtn">下一关 人机对话</button>
       <button class="td-btn ghost" id="mdBackBtn">← 返回封面</button>
     </div>
   </div>
@@ -351,6 +351,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
       <button class="ctl" id="soundBtn">🔊 声音</button>
       <button class="ctl" id="dashBtn">📊 学情分析</button>
       <button class="ctl ctl-submit" id="submitBtn">✔ 提交本关</button>
+      <button class="ctl ctl-submit" id="gotoOralBtn1" style="display:none">下一关 人机对话</button>
     </div>
   </header>
 
@@ -395,6 +396,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
     <div class="big" id="stageScore">100 / 100</div>
     <div class="btnrow">
       <button class="ctl ctl-submit" id="nextStageBtn" style="font-size:20px;padding:12px 30px">进入第二关 →</button>
+      <button class="ctl ctl-submit" id="gotoOralBtn2" style="font-size:20px;padding:12px 30px;display:none">下一关 人机对话</button>
     </div>
   </div>
 </div>
@@ -805,6 +807,7 @@ function startStage(n){
   stageModal.classList.remove("show");
   resultModal.classList.remove("show");
   document.getElementById("stagePill").textContent = n === 1 ? "第 1 关 / 共 2 关 · 排序" : "第 2 关 / 共 2 关 · 配对";
+  document.getElementById("gotoOralBtn1").style.display = (n === 2) ? "" : "none";
   if(n === 1){
     sortZone.style.display = "";
     matchZone.style.display = "none";
@@ -842,7 +845,8 @@ function doSubmit(auto){
   badge.textContent = rating.label;
   badge.className = "rating-badge " + rating.cls;
   document.getElementById("stageScore").textContent = score + " / 100";
-  document.getElementById("nextStageBtn").textContent = currentStage === 1 ? "进入第二关 →" : "查看总成绩 →";
+  document.getElementById("nextStageBtn").textContent = currentStage === 1 ? "进入第二关 →" : "查看学情";
+  document.getElementById("gotoOralBtn2").style.display = currentStage === 2 ? "" : "none";
   stageModal.classList.add("show");
   playFanfare();
 }
@@ -913,7 +917,7 @@ document.getElementById("homeGameBtn").addEventListener("click", backHome);
 document.getElementById("nextStageBtn").addEventListener("click", function(){
   ensureAudio();
   if(currentStage === 1){ startStage(2); }
-  else { showFinal(); }
+  else { stageModal.classList.remove("show"); openDashboard(2); }
 });
 document.getElementById("replayBtn").addEventListener("click", function(){
   ensureAudio();
@@ -925,6 +929,20 @@ document.getElementById("homeBtn").addEventListener("click", function(){
   gameEntry = "cover";
   backHome();
 });
+/* 下一关：人机对话 —— 通过父页面切换 iframe，脱离本闯关页 */
+function goToOralPractice(){
+  var url='task2-oral.html?mobile=1';
+  try{
+    if(window.parent && window.parent!==window && window.parent.document.getElementById('appFrame')){
+      window.parent.document.getElementById('appTitle').textContent='Task 2 · AI口语交际实训';
+      window.parent.document.getElementById('appFrame').src=url;
+      return;
+    }
+  }catch(e){}
+  window.location.href=url;
+}
+document.getElementById("gotoOralBtn1").addEventListener("click", function(){ ensureAudio(); goToOralPractice(); });
+document.getElementById("gotoOralBtn2").addEventListener("click", function(){ ensureAudio(); goToOralPractice(); });
 
 /* ===== 封面 / 学号 / 学情 ===== */
 document.getElementById("enterGameCard").addEventListener("click", function(){ showTeacherDashboard(); });
@@ -1041,7 +1059,7 @@ function openDashboard(n){
 }
 document.getElementById("dashBtn").addEventListener("click", function(){ ensureAudio(); openDashboard(currentStage); });
 document.getElementById("tdStartBtn").addEventListener("click", function(){ ensureAudio(); resumeFromDashboard(1); });
-document.getElementById("mdStartBtn").addEventListener("click", function(){ ensureAudio(); resumeFromDashboard(2); });
+document.getElementById("mdStartBtn").addEventListener("click", function(){ ensureAudio(); goToOralPractice(); });
 document.getElementById("tdBackBtn").addEventListener("click", function(){ dashBackToCover(1); });
 document.getElementById("mdBackBtn").addEventListener("click", function(){ dashBackToCover(2); });
 document.getElementById("tdNextStageBtn").addEventListener("click", function(){

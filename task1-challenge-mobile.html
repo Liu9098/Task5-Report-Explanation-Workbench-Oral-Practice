@@ -216,6 +216,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
     <div class="big" id="stageScore">100 / 100</div>
     <div class="btnrow">
       <button class="ctl ctl-submit" id="nextStageBtn">进入第二关 →</button>
+      <button class="ctl ctl-submit" id="gotoOralBtn2" style="display:none">下一关 人机对话</button>
     </div>
   </div>
 </div>
@@ -511,7 +512,8 @@ function doSubmit(auto){
   document.getElementById("stageCorrect").textContent="正确 "+correct+" / "+N;
   const badge=document.getElementById("stageBadge"); badge.textContent=rating.label; badge.className="rating-badge "+rating.cls;
   document.getElementById("stageScore").textContent=score+" / 100";
-  document.getElementById("nextStageBtn").textContent=currentStage===1?"进入第二关 →":"查看总成绩 →";
+  document.getElementById("nextStageBtn").textContent=currentStage===1?"进入第二关 →":"查看学情";
+  document.getElementById("gotoOralBtn2").style.display=currentStage===2?"":"none";
   stageModal.classList.add("show"); playFanfare();
 }
 function showFinal(){
@@ -552,9 +554,27 @@ soundBtn.addEventListener("click",function(){
 });
 document.getElementById("submitBtn").addEventListener("click",function(){ ensureAudio(); doSubmit(false); });
 document.getElementById("homeGameBtn").addEventListener("click",backHome);
-document.getElementById("nextStageBtn").addEventListener("click",function(){ ensureAudio(); if(currentStage===1){ startStage(2); } else { showFinal(); } });
+document.getElementById("nextStageBtn").addEventListener("click",function(){ ensureAudio(); if(currentStage===1){ startStage(2); } else { stageModal.classList.remove("show"); showMobileDashboard(); } });
 document.getElementById("replayBtn").addEventListener("click",function(){ ensureAudio(); scores={1:null,2:null}; startStage(1); });
 document.getElementById("homeBtn").addEventListener("click",function(){ ensureAudio(); backHome(); });
+/* 第二关学情分析（手机版）：展示本班第一关学情面板 */
+function showMobileDashboard(){
+  gameScreen.style.display="none"; modeScreen.style.display="none";
+  teacherDashboard.style.display="block"; window.scrollTo(0,0);
+}
+/* 下一关：人机对话 —— 通过父页面切换 iframe，脱离本闯关页 */
+function goToOralPractice(){
+  var url='task2-oral.html?mobile=1';
+  try{
+    if(window.parent && window.parent!==window && window.parent.document.getElementById('appFrame')){
+      window.parent.document.getElementById('appTitle').textContent='Task 2 · AI口语交际实训';
+      window.parent.document.getElementById('appFrame').src=url;
+      return;
+    }
+  }catch(e){}
+  window.location.href=url;
+}
+document.getElementById("gotoOralBtn2").addEventListener("click",function(){ ensureAudio(); goToOralPractice(); });
 
 document.getElementById("studentCard").addEventListener("click",function(){ ensureAudio(); modeScreen.style.display="none"; studentScreen.classList.add("show"); });
 document.getElementById("backToCover").addEventListener("click",function(){ studentScreen.classList.remove("show"); modeScreen.style.display=""; });
