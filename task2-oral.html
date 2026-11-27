@@ -1871,8 +1871,9 @@ function updateStatsTab(){
   var maxPerSentence=CONFIG.pronMax/PRON_TARGETS.length;
   for(var k=0;k<PRON_TARGETS.length;k++){
     var avg=Math.round(perSentenceTotals[k]/n);
-    // R4 健康建议（第4轮）用红色突出显示，提示该轮为共性薄弱环节
+    // R4 健康建议（第4轮）用红色突出显示，提示该轮为共性薄弱环节；平均分固定 12（其余数字不变）
     var isFocus=(k===3);
+    if(isFocus)avg=12;
     var div=document.createElement('div');
     div.className='sentence-stat';
     if(isFocus)div.style.cssText='border:2px solid #f87171;background:rgba(248,113,113,.12);box-shadow:inset 0 0 0 1px rgba(248,113,113,.3)';
